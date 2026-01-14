@@ -11,7 +11,7 @@ type Task struct {
 	Done  bool   `json:"done"`
 }
 
-const TodoFile = "data/tasks.json"
+const TodoFile = "./data/tasks.json"
 
 func LoadTasks() ([]Task, error) {
 	if _, err := os.Stat(TodoFile); os.IsNotExist(err) {

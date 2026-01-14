@@ -7,6 +7,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput" // NEW: Import textinput
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // NEW: Define modes to track what the user is doing
@@ -17,7 +18,31 @@ const (
 	modeEdit             // Typing in the text box
 )
 
+var (
+	windowStyle = lipgloss.NewStyle().
+			Padding(1, 2).
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("62"))
+
+	selectedStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("205")).
+			Bold(true)
+
+	doneStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("240")).
+			Strikethrough(true)
+
+	titleStyle = lipgloss.NewStyle().
+			Background(lipgloss.Color("62")).
+			Foreground(lipgloss.Color("230")).
+			Padding(0, 1).
+			MarginBottom(1).
+			Bold(true)
+)
+
 type model struct {
+	width     int
+	height    int
 	tasks     []Task
 	cursor    int
 	mode      mode            // NEW: Track current mode
@@ -40,16 +65,18 @@ func initialModel(tasks []Task) model {
 }
 
 func (m model) Init() tea.Cmd {
-	return textinput.Blink // NEW: Make the cursor blink
+	return textinput.Blink
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
-	// NEW: Handle updates differently based on the mode
 	switch m.mode {
 	case modeView:
 		switch msg := msg.(type) {
+		case tea.WindowSizeMsg:
+			m.width = msg.Width
+			m.height = msg.Height
 		case tea.KeyMsg:
 			switch msg.String() {
 			case "q", "ctrl+c":
@@ -75,7 +102,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 					_ = SaveTasks(m.tasks)
 				}
-			// NEW: Press 'e' to enter Edit Mode
 			case "e":
 				if len(m.tasks) > 0 {
 					m.mode = modeEdit
@@ -84,9 +110,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, textinput.Blink
 				}
 			case "n":
-				newTask := Task{ID: len(m.tasks) + 1, Title: "New Task (Edit me)", Done: false}
+				// 1. Create a blank task
+				newTask := Task{ID: len(m.tasks) + 1, Title: "New Task", Done: false}
 				m.tasks = append(m.tasks, newTask)
-				_ = SaveTasks(m.tasks)
+
+				// 2. Move cursor to the new task
+				m.cursor = len(m.tasks) - 1
+
+				// 3. Switch to edit mode immediately
+				m.mode = modeEdit
+				m.textInput.SetValue("")
+				m.textInput.Focus()
+				return m, textinput.Blink
 			}
 		}
 
@@ -117,35 +152,58 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	s := "Todo List\n\n"
+	// 1. Header
+	s := titleStyle.Render("TODO MANAGER") + "\n"
 
+	// 2. Build the list
+	var listContent string
 	for i, task := range m.tasks {
 		cursor := " "
-		if m.cursor == i {
-			cursor = ">"
-		}
+		var taskTitle string
 
-		checked := " "
-		if task.Done {
-			checked = "x"
-		}
-
-		// NEW: If we are editing THIS specific task, render the input box instead of the text
+		// If we are editing THIS specific line, show the Input Box
 		if m.mode == modeEdit && m.cursor == i {
-			s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, m.textInput.View())
+			cursor = ">"
+			// This renders the actual blinking text box
+			taskTitle = m.textInput.View()
 		} else {
-			s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, task.Title)
+			taskTitle = task.Title
+			if task.Done {
+				taskTitle = doneStyle.Render(taskTitle)
+			}
+			if m.cursor == i {
+				cursor = ">"
+				taskTitle = selectedStyle.Render(taskTitle)
+			}
 		}
+
+		checked := "[ ]"
+		if task.Done {
+			checked = "[x]"
+		}
+
+		listContent += fmt.Sprintf("%s %s %s\n", cursor, checked, taskTitle)
 	}
 
-	s += "\nControls:\n"
+	// 3. Footer/Help
+	helpStr := "\nn: new • e: edit • space: toggle • backspace: delete • q: quit"
 	if m.mode == modeEdit {
-		s += "Enter: Save • Esc: Cancel"
-	} else {
-		s += "↑/↓: Move • Space: Toggle • 'n' New • 'e': Edit • 'q': Quit • BackSpace: Delete"
+		helpStr = "\nenter: save • esc: cancel"
 	}
 
-	return s
+	help := lipgloss.NewStyle().Foreground(lipgloss.Color("241")).Render(helpStr)
+
+	content := s + listContent + help
+
+	styledContent := windowStyle.Render(content)
+
+	return lipgloss.Place(
+		m.width,         // Total width to fill
+		m.height,        // Total height to fill
+		lipgloss.Center, // Horizontal Alignment
+		lipgloss.Center, // Vertical Alignment
+		styledContent,   // Your content
+	)
 }
 
 func main() {
