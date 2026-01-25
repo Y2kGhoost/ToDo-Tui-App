@@ -17,20 +17,7 @@ A sleek, keyboard-centric To-Do list application built for the terminal. Manage 
 - 📱 **Cross-Platform** - Works on Linux, macOS, and Windows
 
 ## 🎬 Demo
-
-```
-┌─────────────────────────────────────┐
-│       📝 My ToDo List               │
-├─────────────────────────────────────┤
-│ ☐ Write project documentation      │
-│ ☑ Build TUI interface              │
-│ ☐ Add task priorities              │
-│ ☐ Deploy to production             │
-├─────────────────────────────────────┤
-│ Press 'n' to add • Space to toggle │
-│  to delete • 'q' to quit        │
-└─────────────────────────────────────┘
-```
+https://github.com/user-attachments/assets/725c6194-4a64-4609-9470-bddedcc6b62e
 
 ## 🚀 Quick Start
 
