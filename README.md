@@ -3,7 +3,6 @@
 A sleek, keyboard-centric To-Do list application built for the terminal. Manage your tasks with style using a distraction-free interface powered by Go, Bubble Tea, and Lip Gloss.
 
 ![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey)
 
 ## 🌟 Features
@@ -75,20 +74,19 @@ Launch the application:
 
 | Key | Action |
 |-----|--------|
-| `a` / `n` | Add a new task |
-| `↑` / `k` | Move cursor up |
-| `↓` / `j` | Move cursor down |
+| `n` | Add a new task |
+| `↑` | Move cursor up |
+| `↓` | Move cursor down |
 | `Space` / `Enter` | Toggle task completion |
-| `d` / `x` | Delete selected task |
+| `BackSpace` | Delete selected task |
 | `e` | Edit selected task |
 | `q` / `Ctrl+C` | Quit application |
-| `?` | Show help menu |
 
 ### Task Management
 
-1. **Add a task**: Press `a`, type your task, and hit `Enter`
+1. **Add a task**: Press `n`, type your task, and hit `Enter`
 2. **Complete a task**: Navigate to it and press `Space`
-3. **Delete a task**: Navigate to it and press `d`
+3. **Delete a task**: Navigate to it and press `BackSpace`
 4. **Edit a task**: Navigate to it and press `e`
 
 ## 📁 Project Structure
